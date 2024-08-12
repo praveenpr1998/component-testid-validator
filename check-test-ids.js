@@ -2,6 +2,7 @@
 
 const glob = require("glob");
 const fs = require("fs");
+const path = require("path");
 const parser = require("@babel/parser");
 const traverse = require("@babel/traverse").default;
 const chalk = require("chalk");
@@ -19,8 +20,17 @@ if (!configPath) {
   process.exit(1);
 }
 
+const configFilePath = path.resolve(process.cwd(), configPath);
+
+if (!fs.existsSync(configFilePath)) {
+  console.error(
+    chalk.red(`Error loading configuration file ${configPath}: ${err.message}`)
+  );
+  process.exit(1);
+}
+
 try {
-  config = require(configPath);
+  config = require(configFilePath);
 } catch (err) {
   console.error(
     chalk.red(`Error loading configuration file ${configPath}: ${err.message}`)

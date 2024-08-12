@@ -1,6 +1,6 @@
 {
   "name": "component-testid-validator",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "A tool to check for testID attributes in React and React Native components.",
   "main": "index.js",
   "scripts": {
@@ -20,8 +20,17 @@
     "@babel/parser": "^7.15.8",
     "@babel/traverse": "^7.15.8",
     "chalk": "^4.1.2",
-    "glob": "^7.1.7"
+    "glob": "^7.1.7",
+    "path": "^0.12.7"
   },
   "author": "Praveen Raj T",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/praveenpr1998/component-testid-validator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/praveenpr1998/component-testid-validator/issues"
+  },
+  "homepage": "https://github.com/praveenpr1998/component-testid-validator#readme"
 }
