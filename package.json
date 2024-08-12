@@ -1,0 +1,27 @@
+{
+  "name": "component-testid-validator",
+  "version": "1.0.3",
+  "description": "A tool to check for testID attributes in React and React Native components.",
+  "main": "index.js",
+  "scripts": {
+    "check-test-ids": "node check-test-ids.js --config ./config.json"
+  },
+  "bin": {
+    "check-test-ids": "./check-test-ids.js"
+  },
+  "keywords": [
+    "react",
+    "react-native",
+    "javascript",
+    "jsx",
+    "typescript"
+  ],
+  "dependencies": {
+    "@babel/parser": "^7.15.8",
+    "@babel/traverse": "^7.15.8",
+    "chalk": "^4.1.2",
+    "glob": "^7.1.7"
+  },
+  "author": "Praveen Raj T",
+  "license": "MIT"
+}
