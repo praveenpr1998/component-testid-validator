@@ -1,6 +1,6 @@
 # Component TestID Checker
 
-` Component TestID Checker` is a command-line tool that checks for the presence of `testID` attributes in React, React Native, and Angular components. This tool helps ensure that all interactive elements in your project have the necessary `testID` or also can detect multiple attributes for testing purposes.
+` Component TestID Checker` is a command-line tool that checks for the presence of `testID` attributes in React, React Native, and Angular components. This tool helps ensure that all interactive elements in your project have the necessary `testID` or also can detect multiple attributes for testing purposes and can `autofix`.
 
 ## Installation
 
@@ -49,6 +49,7 @@ The tool requires a configuration file to specify various options. The configura
   "extensions": "js,jsx,tsx,ts",
   "outputFormat": "text",
   "excludePattern": "",
+  "autoFix":true,
   "nonInteractiveElements": ["View", "Text", "Image"],
   "internalElementPattern": "^_",
   "interactiveElements": [
@@ -78,6 +79,7 @@ The tool requires a configuration file to specify various options. The configura
   "testIdAttributes": ["data-testid"],
   "extensions": "js,jsx,tsx,ts",
   "outputFormat": "text",
+  "autoFix":true,
   "excludePattern": "",
   "nonInteractiveElements": ["div", "span", "img"],
   "internalElementPattern": "^_",
@@ -102,6 +104,24 @@ The tool requires a configuration file to specify various options. The configura
 ```
 
 ### Configuration Options
+
+### Auto Fix
+
+- **`autoFix`**: If you want the package to autofix the missing attributes in the actual code you can pass this attribute to be true
+
+You will prompted with a question to autofix the missing ones
+
+![Alt Text](https://raw.githubusercontent.com/praveenpr1998/assetsfolder/main/yesno.png)
+
+**yes**:
+
+![Alt Text](https://raw.githubusercontent.com/praveenpr1998/assetsfolder/main/yes.png)
+
+**no**:
+
+![Alt Text](https://raw.githubusercontent.com/praveenpr1998/assetsfolder/main/no.png)
+
+### Other Config
 
 - **`directoryToCheck` (string)**: The directory to search for component files. Default is `'src'`.
 - **`testIdAttributes` (array of strings)**: The list of `testID` attributes to check for. Default is `['testID']`.

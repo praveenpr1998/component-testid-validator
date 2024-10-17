@@ -8,13 +8,14 @@ const traverse = require("@babel/traverse").default;
 const chalk = require("chalk");
 const yargs = require("yargs/yargs");
 const { hideBin } = require("yargs/helpers");
+const t = require("@babel/types");
+const readline = require("readline");
 
 // Use yargs to parse command-line arguments
 const argv = yargs(hideBin(process.argv)).argv;
 
 // Load configuration
 const configPath = argv.config;
-
 if (!configPath) {
   console.error(chalk.red(`Please provide a config file path`));
   process.exit(1);
@@ -23,11 +24,11 @@ if (!configPath) {
 const configFilePath = path.resolve(process.cwd(), configPath);
 
 if (!fs.existsSync(configFilePath)) {
-  console.error(
-    chalk.red(`Error loading configuration file ${configPath}: ${err.message}`)
-  );
+  console.error(chalk.red(`Error loading configuration file ${configPath}`));
   process.exit(1);
 }
+
+let config;
 
 try {
   config = require(configFilePath);
@@ -48,6 +49,7 @@ const dynamicTestIdFunction = config.dynamicTestIdFunction || "getTestID";
 const nonInteractiveElements = new Set(config.nonInteractiveElements);
 const internalElementPattern = new RegExp(config.internalElementPattern);
 const interactiveElements = new Set(config.interactiveElements);
+const autoFix = config.autoFix || false;
 
 const colors = config.colors || {
   componentName: "red",
@@ -62,6 +64,7 @@ const globPattern = `${directoryToCheck}/**/*.{${extensions
   .join(",")}}`;
 
 let missingTestIdCount = 0;
+const filesToFix = new Map();
 
 function logWarning(elementName, filePath, lineNumber, missingAttributes) {
   const coloredComponentName = chalk[colors.componentName](elementName);
@@ -95,6 +98,8 @@ function checkTestIdInFile(filePath) {
       allowAwaitOutsideFunction: true,
     });
 
+    let fileChanged = false;
+
     traverse(ast, {
       JSXOpeningElement(path) {
         const elementName = path.node.name.name;
@@ -124,6 +129,17 @@ function checkTestIdInFile(filePath) {
             return false;
           });
 
+          if (autoFix && !hasTestId && !hasDynamicTestId) {
+            const testID = t.jsxAttribute(
+              t.jsxIdentifier(attr),
+              t.stringLiteral(
+                `test-id-${Math.random().toString(36).substring(7)}`
+              )
+            );
+            path.node.attributes.push(testID);
+            fileChanged = true;
+          }
+
           return !(hasTestId || hasDynamicTestId);
         });
 
@@ -134,9 +150,20 @@ function checkTestIdInFile(filePath) {
         }
       },
     });
+
+    if (fileChanged) {
+      const newCode = generateCodeFromAST(ast);
+      filesToFix.set(filePath, newCode);
+    }
   } catch (err) {
     console.error(chalk.red(`Error parsing file ${filePath}: ${err.message}`));
   }
+}
+
+function generateCodeFromAST(ast) {
+  const generate = require("@babel/generator").default;
+  const output = generate(ast, { retainLines: true });
+  return output.code;
 }
 
 function checkTestIdsInDirectory(directoryPath) {
@@ -149,7 +176,43 @@ function checkTestIdsInDirectory(directoryPath) {
     files.forEach((file) => {
       checkTestIdInFile(file);
     });
+
+    if (autoFix && filesToFix.size > 0) {
+      promptUserForFix();
+    }
   });
+}
+
+function promptUserForFix() {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  console.log("\n");
+  rl.question(
+    chalk.green.bold(
+      "Do you want to automatically fix the missing testID attributes? (yes/no) "
+    ),
+    (answer) => {
+      if (answer.toLowerCase() === "yes") {
+        filesToFix.forEach((newCode, filePath) => {
+          fs.writeFileSync(filePath, newCode);
+          console.log(chalk.green.bold(`Fixed ${filePath}`));
+        });
+        console.log("\n");
+        console.log(
+          chalk.green.bold(
+            "✨ All missing testID attributes have been fixed! ✨"
+          )
+        );
+        missingTestIdCount = 0;
+        process.exit(0);
+      } else {
+        console.log(chalk.yellow.bold("No changes were made."));
+      }
+      rl.close();
+    }
+  );
 }
 
 process.on("exit", () => {
@@ -157,6 +220,7 @@ process.on("exit", () => {
     console.log(
       chalk.green.bold("✨ All components have testID attributes added! ✨")
     );
+    process.exit(0);
   } else {
     console.log("\n");
     console.log(
